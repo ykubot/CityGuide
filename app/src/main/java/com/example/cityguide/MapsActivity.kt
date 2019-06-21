@@ -45,8 +45,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
 
     companion object {
         private const val LOCATION_PERMISSION_REQUEST_CODE = 1
-        private const val REQUEST_CHECK_SETTINGS = 2
-        private const val REQUEST_CAMERA_PERMISSION = 1
+        private const val REQUEST_CAMERA_PERMISSION = 2
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -103,7 +102,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         Log.d("onActivityResult", "start")
-        if (requestCode == REQUEST_CHECK_SETTINGS) {
+        if (requestCode == LOCATION_PERMISSION_REQUEST_CODE) {
             if (requestCode == Activity.RESULT_OK) {
                 locationUpdateState = true
                 startLocationUpdates()
@@ -143,13 +142,13 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         Log.d("onRequestPermissionsResult", "start")
         Log.d("onRequestPermissionsResult", requestCode.toString())
-//        if (requestCode == REQUEST_CAMERA_PERMISSION) {
-//            if (grantResults[0] != PackageManager.PERMISSION_GRANTED) {
-////                requestCameraPermission()
-//            }
-//        } else {
-//            super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-//        }
+
+        if (requestCode == REQUEST_CAMERA_PERMISSION) {
+            if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                scanQRCode()
+            }
+        }
+
         if (requestCode == LOCATION_PERMISSION_REQUEST_CODE) {
             locationUpdateState = true
             startLocationUpdates()
@@ -159,6 +158,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
 
     private fun setUpMap() {
         if(ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            Log.d("setUpMap", "request start")
             ActivityCompat.requestPermissions(this, arrayOf(android.Manifest.permission.ACCESS_FINE_LOCATION), LOCATION_PERMISSION_REQUEST_CODE)
             return
         }
@@ -188,13 +188,16 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
 
 
     private fun startLocationUpdates() {
-        Log.d("startLocationUpdates", "start")
+
         if(ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            Log.d("startLocationUpdates", "request start")
             ActivityCompat.requestPermissions(this, arrayOf(android.Manifest.permission.ACCESS_FINE_LOCATION), LOCATION_PERMISSION_REQUEST_CODE)
             return
         }
 
         fusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, null)
+
+        setUpMap()
     }
 
 
@@ -217,7 +220,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
         task.addOnFailureListener { e ->
             if (e is ResolvableApiException) {
                 try {
-                    e.startResolutionForResult(this@MapsActivity, REQUEST_CHECK_SETTINGS)
+                    e.startResolutionForResult(this@MapsActivity, LOCATION_PERMISSION_REQUEST_CODE)
                 } catch (sendEx: IntentSender.SendIntentException) {
 
                 }
@@ -229,7 +232,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
         if (ActivityCompat.shouldShowRequestPermissionRationale(this, android.Manifest.permission.CAMERA)) {
             Toast.makeText(this, "カメラのパーミッションが許可されていません", Toast.LENGTH_LONG).show()
         } else {
-            ActivityCompat.requestPermissions(this, arrayOf(android.Manifest.permission.CAMERA), 999)
+            ActivityCompat.requestPermissions(this, arrayOf(android.Manifest.permission.CAMERA), REQUEST_CAMERA_PERMISSION)
         }
     }
 
