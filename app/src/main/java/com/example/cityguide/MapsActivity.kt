@@ -1,6 +1,8 @@
 package com.example.cityguide
 
 import android.app.Activity
+import android.app.AlertDialog
+import android.content.DialogInterface
 import android.content.Intent
 import android.content.IntentSender
 import android.content.pm.PackageManager
@@ -112,10 +114,11 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
         val result: IntentResult? = IntentIntegrator.parseActivityResult(requestCode, resultCode, data)
         if (result != null) {
             if (result.contents != null) {
-                Toast.makeText(this, result.contents, Toast.LENGTH_LONG).show()
+//                Toast.makeText(this, result.contents, Toast.LENGTH_LONG).show()
+                showDialog(result.contents)
             }
         } else {
-            Toast.makeText(this, "Fail!!", Toast.LENGTH_LONG).show()
+            Toast.makeText(this, "失敗しました", Toast.LENGTH_LONG).show()
             super.onActivityResult(requestCode, resultCode, data)
         }
     }
@@ -150,6 +153,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
         }
 
         if (requestCode == LOCATION_PERMISSION_REQUEST_CODE) {
+            setUpMap()
             locationUpdateState = true
             startLocationUpdates()
         }
@@ -189,15 +193,11 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
 
     private fun startLocationUpdates() {
 
-        if(ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+        if(ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             Log.d("startLocationUpdates", "request start")
-            ActivityCompat.requestPermissions(this, arrayOf(android.Manifest.permission.ACCESS_FINE_LOCATION), LOCATION_PERMISSION_REQUEST_CODE)
-            return
+            fusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, null)
         }
 
-        fusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, null)
-
-        setUpMap()
     }
 
 
@@ -252,4 +252,21 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
         }
     }
 
+    /**
+     * Dialog
+     */
+    private fun showDialog(text: String) {
+
+        AlertDialog.Builder(this).apply {
+            setTitle("使用しますか？")
+            setMessage(text)
+            setPositiveButton("OK", DialogInterface.OnClickListener { _, _ ->
+                Toast.makeText(context, "使用開始しました", Toast.LENGTH_LONG).show()
+            })
+            setNegativeButton("Cancel", DialogInterface.OnClickListener {_, _ ->
+                Toast.makeText(context, "キャンセルしました", Toast.LENGTH_LONG).show()
+            })
+            show()
+        }
+    }
 }
