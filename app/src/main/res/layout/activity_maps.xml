@@ -11,11 +11,13 @@
               android:name="com.google.android.gms.maps.SupportMapFragment"/>
 
     <Button
-            android:text="Rent"
-            android:layout_width="match_parent"
+            android:text="鍵を開ける"
+            android:layout_width="302dp"
             android:layout_height="wrap_content"
             android:id="@+id/rentButton"
-            android:layout_gravity="bottom|center"/>
+            android:layout_gravity="bottom|center" android:layout_marginBottom="20dp"
+            android:background="@color/common_google_signin_btn_text_dark_focused" android:textSize="18sp"
+            android:textColor="#FFFFFF"/>
 
     <!--<com.journeyapps.barcodescanner.DecoratedBarcodeView-->
             <!--android:id="@+id/decoratedBarcodeView"-->
